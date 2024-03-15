@@ -3,20 +3,20 @@
 add_subdirectory(converter)
 add_subdirectory(parser)
 
-add_library(
-  symbol_table
-  Location.cpp
-  Location.h
-  PlanPrinterVisitor.cpp
-  PlanPrinterVisitor.h
-  StringManipulation.cpp
-  StringManipulation.h
-  SymbolTable.cpp
-  SymbolTable.h
-  SymbolTablePrinter.cpp
-  SymbolTablePrinter.h
-  StructuredSymbolData.h
-  Any.h)
+set(SYMBOL_TABLE_HDRS
+    Location.h
+    PlanPrinterVisitor.h
+    StringManipulation.h
+    SymbolTable.h
+    SymbolTablePrinter.h
+    StructuredSymbolData.h
+    Any.h)
+
+set(SYMBOL_TABLE_SRCS
+    Location.cpp PlanPrinterVisitor.cpp StringManipulation.cpp SymbolTable.cpp
+    SymbolTablePrinter.cpp)
+
+add_library(symbol_table ${SYMBOL_TABLE_HDRS} ${SYMBOL_TABLE_SRCS})
 
 add_library(error_listener SubstraitErrorListener.cpp SubstraitErrorListener.h)
 
@@ -36,9 +36,17 @@ target_link_libraries(
   date::date)
 
 # Provide access to the generated protobuffer headers hierarchy.
-target_include_directories(symbol_table
-                           PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/../..")
+target_include_directories(
+  symbol_table PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../..>
+                      $<INSTALL_INTERFACE:include>)
 
 if(${SUBSTRAIT_CPP_BUILD_TESTING})
   add_subdirectory(tests)
 endif()
+
+install(
+  TARGETS symbol_table error_listener parse_result
+  DESTINATION lib
+  EXPORT SubstraitTextplanTargets)
+install(FILES ${SYMBOL_TABLE_HDRS} DESTINATION include/substrait/textplan)
+install(EXPORT SubstraitTextplanTargets DESTINATION lib/cmake/Substrait)

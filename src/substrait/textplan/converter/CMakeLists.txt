@@ -2,17 +2,11 @@
 
 include(../../../../third_party/datetime.cmake)
 
-set(TEXTPLAN_SRCS
-    InitialPlanProtoVisitor.cpp
-    InitialPlanProtoVisitor.h
-    PipelineVisitor.cpp
-    PipelineVisitor.h
-    LoadBinary.cpp
-    LoadBinary.h
-    SaveBinary.cpp
-    SaveBinary.h
-    ParseBinary.cpp
-    ParseBinary.h)
+set(TEXTPLAN_HDRS InitialPlanProtoVisitor.h PipelineVisitor.h LoadBinary.h
+                  SaveBinary.h ParseBinary.h)
+
+set(TEXTPLAN_SRCS InitialPlanProtoVisitor.cpp PipelineVisitor.cpp
+                  LoadBinary.cpp SaveBinary.cpp ParseBinary.cpp)
 
 add_library(substrait_base_proto_visitor BasePlanProtoVisitor.cpp
                                          BasePlanProtoVisitor.h)
@@ -26,7 +20,7 @@ target_link_libraries(
   absl::status
   absl::statusor)
 
-add_library(substrait_textplan_converter ${TEXTPLAN_SRCS})
+add_library(substrait_textplan_converter ${TEXTPLAN_SRCS} ${TEXTPLAN_HDRS})
 
 target_link_libraries(
   substrait_textplan_converter
@@ -53,3 +47,13 @@ add_library(substrait_textplan_normalizer ${NORMALIZER_SRCS})
 
 target_link_libraries(substrait_textplan_normalizer
                       substrait_textplan_converter)
+
+install(
+  TARGETS substrait_textplan_converter substrait_base_proto_visitor
+          substrait_textplan_normalizer
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  EXPORT SubstraintTexplanConverterTargets)
+install(FILES ${TEXTPLAN_HDRS}
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/substrait/textplan/converter")
+install(EXPORT SubstraintTexplanConverterTargets
+        DESTINATION lib/cmake/Substrait)

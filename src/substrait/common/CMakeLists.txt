@@ -24,9 +24,14 @@ if(${SUBSTRAIT_CPP_BUILD_TESTING})
   add_subdirectory(tests)
 endif()
 
-install(TARGETS substrait_io LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(
+  TARGETS substrait_io substrait_common
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  EXPORT SubstraitCommonTargets)
 install(FILES ../../../include/substrait/common/Io.h
+              ../../../include/substrait/common/Exceptions.h
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/substrait/common")
+install(EXPORT SubstraitCommonTargets DESTINATION lib/cmake/Substrait)
 
 add_executable(plantransformer PlanTransformerTool.cpp)
 

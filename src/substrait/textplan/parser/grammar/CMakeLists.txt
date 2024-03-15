@@ -55,7 +55,19 @@ add_library(textplan_grammar ${ANTLR_SubstraitPlanLexer_CXX_OUTPUTS}
 
 message(STATUS "generated dir:  ${GRAMMAR_DIR}/antlr4cpp_generated_src")
 
-target_include_directories(textplan_grammar
-                           PUBLIC "${GRAMMAR_DIR}/antlr4cpp_generated_src")
+target_include_directories(
+  textplan_grammar
+  INTERFACE $<BUILD_INTERFACE:${GRAMMAR_DIR}/antlr4cpp_generated_src>
+            $<INSTALL_INTERFACE:include/substrait/textplan/parser/grammar>)
 
 target_link_libraries(textplan_grammar antlr4_static)
+
+install(
+  TARGETS textplan_grammar
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  EXPORT SubstraitTexplanParserGrammerTargets)
+install(
+  FILES ${TEXTPLAN_LOADER_HDRS}
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/substrait/textplan/parser/grammar")
+install(EXPORT SubstraitTexplanParserGrammerTargets
+        DESTINATION lib/cmake/Substrait)
