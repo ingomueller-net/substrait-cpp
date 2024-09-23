@@ -189,6 +189,12 @@ std::any SubstraitPlanTypeVisitor::visitLiteral_complex_type(
             ctx->getStart(), "Unable to recognize requested type.");
       }
       break;
+    case TypeKind::kPrecisionTimestamp:
+      type.mutable_precision_timestamp()->set_nullability(nullValue);
+      break;
+    case TypeKind::kPrecisionTimestampTz:
+      type.mutable_precision_timestamp_tz()->set_nullability(nullValue);
+      break;
   }
   return type;
 }

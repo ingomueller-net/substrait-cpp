@@ -291,6 +291,14 @@ ParameterizedTypePtr ParameterizedType::decode(
     } else if (TypeTraits<TypeKind::kFixedBinary>::kTypeString == baseType) {
       return decodeType<TypeKind::kFixedBinary>(
           isParameterized, nullable, nestedTypes);
+    } else if (
+        TypeTraits<TypeKind::kPrecisionTimestamp>::kTypeString == baseType) {
+      return decodeType<TypeKind::kPrecisionTimestamp>(
+          isParameterized, nullable, nestedTypes);
+    } else if (
+        TypeTraits<TypeKind::kPrecisionTimestampTz>::kTypeString == baseType) {
+      return decodeType<TypeKind::kPrecisionTimestampTz>(
+          isParameterized, nullable, nestedTypes);
     } else {
       SUBSTRAIT_UNSUPPORTED("Unsupported type: " + rawType);
     }

@@ -34,6 +34,8 @@ enum class TypeKind : int8_t {
   kStruct = 21,
   kList = 22,
   kMap = 23,
+  kPrecisionTimestamp = 24,
+  kPrecisionTimestampTz = 25,
   kKindNotSet = 0,
 };
 
@@ -176,6 +178,18 @@ template <>
 struct TypeTraits<TypeKind::kMap> {
   static constexpr const char* kSignature = "map";
   static constexpr const char* kTypeString = "map";
+};
+
+template <>
+struct TypeTraits<TypeKind::kPrecisionTimestamp> {
+  static constexpr const char* kSignature = "pts";
+  static constexpr const char* kTypeString = "precision_timestamp";
+};
+
+template <>
+struct TypeTraits<TypeKind::kPrecisionTimestampTz> {
+  static constexpr const char* kSignature = "ptstz";
+  static constexpr const char* kTypeString = "precision_timestamp";
 };
 
 class ParameterizedType {
@@ -399,6 +413,44 @@ class Map : public TypeBase<TypeKind::kMap> {
  private:
   const TypePtr keyType_;
   const TypePtr valueType_;
+};
+
+class PrecisionTimestamp : public TypeBase<TypeKind::kPrecisionTimestamp> {
+ public:
+  explicit PrecisionTimestamp(int precision, bool nullable = false)
+      : TypeBase<TypeKind::kPrecisionTimestamp>(nullable),
+        precision_(precision) {}
+
+  [[nodiscard]] const int& precision() const {
+    return precision_;
+  }
+
+  [[nodiscard]] std::string signature() const override;
+
+  [[nodiscard]] bool isMatch(
+      const std::shared_ptr<const ParameterizedType>& type) const override;
+
+ private:
+  const int precision_;
+};
+
+class PrecisionTimestampTz : public TypeBase<TypeKind::kPrecisionTimestampTz> {
+ public:
+  explicit PrecisionTimestampTz(int precision, bool nullable = false)
+      : TypeBase<TypeKind::kPrecisionTimestampTz>(nullable),
+        precision_(precision) {}
+
+  [[nodiscard]] const int& precision() const {
+    return precision_;
+  }
+
+  [[nodiscard]] std::string signature() const override;
+
+  [[nodiscard]] bool isMatch(
+      const std::shared_ptr<const ParameterizedType>& type) const override;
+
+ private:
+  const int precision_;
 };
 
 class ParameterizedTypeBase : public ParameterizedType {
@@ -632,6 +684,54 @@ class ParameterizedMap : public ParameterizedTypeBase {
   const ParameterizedTypePtr valueType_;
 };
 
+class ParameterizedPrecisionTimestamp : public ParameterizedTypeBase {
+ public:
+  explicit ParameterizedPrecisionTimestamp(
+      StringLiteralPtr precision,
+      bool nullable = false)
+      : ParameterizedTypeBase(nullable), precision_(std::move(precision)) {}
+
+  [[nodiscard]] const StringLiteralPtr& precision() const {
+    return precision_;
+  }
+
+  [[nodiscard]] TypeKind kind() const override {
+    return TypeKind::kPrecisionTimestamp;
+  }
+
+  [[nodiscard]] std::string signature() const override;
+
+  [[nodiscard]] bool isMatch(
+      const std::shared_ptr<const ParameterizedType>& type) const override;
+
+ private:
+  const StringLiteralPtr precision_;
+};
+
+class ParameterizedPrecisionTimestampTz : public ParameterizedTypeBase {
+ public:
+  explicit ParameterizedPrecisionTimestampTz(
+      StringLiteralPtr precision,
+      bool nullable = false)
+      : ParameterizedTypeBase(nullable), precision_(std::move(precision)) {}
+
+  [[nodiscard]] const StringLiteralPtr& precision() const {
+    return precision_;
+  }
+
+  [[nodiscard]] TypeKind kind() const override {
+    return TypeKind::kPrecisionTimestampTz;
+  }
+
+  [[nodiscard]] std::string signature() const override;
+
+  [[nodiscard]] bool isMatch(
+      const std::shared_ptr<const ParameterizedType>& type) const override;
+
+ private:
+  const StringLiteralPtr precision_;
+};
+
 std::shared_ptr<const ScalarType<TypeKind::kBool>> boolean();
 
 std::shared_ptr<const ScalarType<TypeKind::kI8>> tinyint();
@@ -679,5 +779,9 @@ std::shared_ptr<const Map> map(
     const TypePtr& valueType);
 
 std::shared_ptr<const Struct> row(const std::vector<TypePtr>& children);
+
+std::shared_ptr<const PrecisionTimestamp> precisionTimestamp(int precision);
+
+std::shared_ptr<const PrecisionTimestampTz> precisionTimestampTz(int precision);
 
 } // namespace io::substrait
